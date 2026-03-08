@@ -26,7 +26,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadUserProfile = async (userId: string) => {
+  try {
     const profile = await getUsageProfile(userId);
+
     if (!profile) {
       await createUsageProfile(userId);
       const newProfile = await getUsageProfile(userId);
@@ -35,9 +37,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserProfile(profile);
     }
 
-    const subProfile = await getSubscriptionProfile();
-    setSubscriptionProfile(subProfile);
-  };
+    try {
+      const subProfile = await getSubscriptionProfile();
+      setSubscriptionProfile(subProfile);
+    } catch (e) {
+      console.error("Subscription error:", e);
+      setSubscriptionProfile(null);
+    }
+
+  } catch (e) {
+    console.error("User profile error:", e);
+    setUserProfile(null);
+    setSubscriptionProfile(null);
+  }
+};
 
   const refreshProfile = async () => {
     if (user?.id) {
